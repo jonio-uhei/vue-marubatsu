@@ -1,141 +1,140 @@
-<html>
-<head>
-    <style>
-        #table {
-            margin:0 auto;
-            border-collapse: collapse;
-            border: 3px solid #ccc;
-         }
-        #table td {
-        border:1px solid #ccc;
-        height: 80px;
-        width: 80px;
-        text-align: center;
-        vertical-align: middle;
-        font-size: 75px;
-        cursor: pointer;
-        }
-    </style>
-</head>
-<body>
-    <div id="app">
-        <h1 style="text-align:center">Vueで○×ゲーム</h1>
-        <table id="table">
-            <tr v-for="(row,rowsIndex) in states">
-                <td v-for="(state,colsIndex) in row" @click="onSelect(rowsIndex, colsIndex)">
-                    <div style="color:#f00; font-size:45px;" v-if="state==1">○</div>
-                    <div style="color:#00f; font-size:50px;" v-if="state==2">×</div>
-                </td>
-            </tr>
-        </table>
-        <br>
-        <div style="text-align:center;">
-            <div style="color:#f00;" v-if="playerId==1">「○ プレイヤーさん、マスを選んでください」</div>
-            <div style="color:#00f;" v-if="playerId==2">「× プレイヤーさん、マスを選んでください」</div>
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="ie=edge">
+        <title>Vueで作ったマルバツゲーム</title>
+    </head>
+    <body>
+        <div id="app">   
+            <table id="table">
+                <tr v-for="(row,rowsIndex) in states">
+                    <td 
+                        v-for="(state,colsIndex) in row"
+                        @click="onSelect(rowsIndex,colsIndex)"
+                     >
+                        <div style="color:#f00" v-if="state == 1">◯</div>
+                        <div style="color:#00f" v-if="state == 2">×</div>
+                    </td>
+                </tr>
+            </table>  
+            <div style="text-align:center; margin-top:20px;">
+                <div style="color:#f00;" v-if="playerId == 1">「○プレイヤーさんマスを選んでください」</div>
+                <div style="color:#00f;" v-if="playerId == 2">「×プレイヤーさんマスを選んでください」</div>
+            </div>
         </div>
-        <br>
-        <div v-if="winnerText" style="text-align:center;">
-            <h2 v-text="winnerText"></h2>
-            <img src="./images/congrats.png">
-        </div>
-    </div>
-    <script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.min.js"></script>
-    <script>
-        new Vue({
-            el: '#app',
-        data:{
-            states:[],
-            playerId:1,
-            winnerText: ''
-        },
-        methods:{
-            init: function() {
-                this.states = [
-                    [-1, -1, -1],
-                    [-1, -1, -1],
-                    [-1, -1, -1]
-                ];
-            },
-            onSelect: function(rowsIndex, colsIndex) {
-                this.winnerText = '';
-                if(this.states[rowsIndex][colsIndex] != -1) {
-                    alert('そのマスは、すでに選択されています！');
-                    }else{
-                    let states = JSON.parse(JSON.stringify(this.states))
-                    states[rowsIndex][colsIndex] = this.playerId;
-                    this.states = states;
-                    this.playerId = (this.playerId == 1) ? 2 : 1;
-                    let winnerId = this.getWinnerId();
-                    if(winnerId != -1) {
-                        this.init();
-                        playerIds = {
-                            1: '○',
-                            2: '×'
-                        };
-                        this.winnerText = playerIds[winnerId] +' さんの勝ちです。おめでとうございます！';
-                        } else if(this.isDraw()) {
-                            this.init();
-                            alert('引き分けです！');
+        <script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.min.js"></script>
+        <script>
+
+            var app = new Vue({
+                el: '#app',
+                data:{
+                    states:[],
+                    playerId:1
+                },
+                methods:{
+                    onSelect:function(rowsIndex,colsIndex){
+                        if(this.states[rowsIndex][colsIndex] != -1){
+                            alert('そのマスはすでに選択されています。')
+                        }else{
+                            let states = JSON.parse(JSON.stringify(this.states))
+                            states[rowsIndex][colsIndex] = this.playerId;
+                            this.states = states;
+                            this.playerId = (this.playerId == 1) ? 2 : 1;
+
+                            let winnerId = this.getWinnerId();
+                            if(winnerId != -1){
+                                playerIds = {
+                                    1:'○',
+                                    2:'×'
+                                }
+                                    alert(playerIds[winnerId] + 'さんの勝ちです。');
+                                } else if(this.isDraw()) {
+                                    alert('引き分けです！');
+                                }
                         }
-                    }
-                },
-                isStatesFilled:function(states){
-                    return(
-                        states[0] != -1 &&
-                        states[0] == states[1] &&
-                        states[0] == states[2] 
-                    );
-                },
-                isDraw:function(){
-                    for(let i in this.states){
-                        let row = this.states[i];
-                        for(let j in row){
-                            let state = row[j];
-                            if(state == -1){
-                                return false
+                    },
+                    init:function(){
+                        this.states = [
+                            [-1,-1,-1],
+                            [-1,-1,-1],
+                            [-1,-1,-1],
+                        ];
+                    },
+                    isStatesFilled: function(states) {
+                        return(
+                            states[0] != -1 && states[0] == states[1] && states[1] == states[2]
+                        );
+                    },
+                    getWinnerId:function(){
+                        for(let i =0;i < 3;i++){
+                            let row = this.states[i];
+                            if(this.isStatesFilled(row)){
+                                return row[0];
+                            }
+                            let col = [
+                                this.states[0][i],
+                                this.states[1][i],
+                                this.states[2][i]
+                            ];
+                            if(this.isStatesFilled(col)){
+                                return this.states[0][i];
                             }
                         }
-                    }
-                    return true;
-                },
-                getWinnerId:function(){
-                    for(let i =0;i<3;i++){
-                        let row = this.states[i];
-                        if(this.isStatesFilled(row)){
-                            return row[0];
-                        }
-                        let col = [
-                            this.states[0][i],
-                            this.states[1][i],
-                            this.states[2][i],
+                        let skew1 = [
+                            this.states[0][0],
+                            this.states[1][1],
+                            this.states[2][2],
                         ];
-                        if(this.isStatesFilled(col)){
-                            return this.states[0][i];
+                        if(this.isStatesFilled(skew1)){
+                            return this.states[0][0];
                         }
+                        let skew2 = [
+                            this.states[0][2],
+                            this.states[1][1],
+                            this.states[2][0],
+                        ];
+                        if(this.isStatesFilled(skew2)){
+                            return this.states[0][2];
+                        }
+                        return -1;
+                    },
+                    isDraw: function() {
+
+                        for(var i in this.states) {
+                            var row = this.states[i];
+                            for(var j in row) {
+                                var state = row[j];
+                                if(state == -1) {
+                                    return false;
+                                }
+                            }
+                        }
+                        return true;
                     }
-                    let skew1 = [
-                        this.states[0][0],
-                        this.states[1][1],
-                        this.states[2][2],
-                    ];
-                    if(this.isStatesFilled(skew1)){
-                        return this.states[0][0];
-                    }
-                    let skew2 = [
-                        this.states[0][2],
-                        this.states[1][1],
-                        this.states[2][0],
-                    ];
-                    if(this.isStatesFilled(skew2)){
-                        return this.states[0][2];
-                    }
-                    return -1
+                },
+                mounted: function() {
+                    this.init();
                 }
-            },
-            mounted: function() {
-                this.init();
+            })
+        </script>
+        <style>
+            #table {
+                margin:0 auto;
+                border-collapse: collapse;
+                border: 3px solid #ccc;
+                margin-top: 100px;
             }
-        })
-    </script>
-</body>
+            #table td {
+                border:1px solid #ccc;
+                height: 80px;
+                width: 80px;
+                text-align: center;
+                vertical-align: middle;
+                font-size: 75px;
+                cursor: pointer;
+            }
+        </style>
+    </body>
 </html>
